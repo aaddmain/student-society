@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行系统 - 登录/注册</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 增强视觉效果 */
+        .welcome-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: gradientShift 10s ease infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 卡片悬停效果 */
+        .feature {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 表单动画 */
+        .form-content {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .form-content.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* 按钮增强效果 */
+        .login-btn, .register-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn::before, .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .login-btn:hover::before, .register-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* 输入框焦点效果 */
+        .input-group input:focus, .input-group select:focus {
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* 响应式改进 */
+        @media (max-width: 768px) {
+            .login-register-container {
+                flex-direction: column;
+                border-radius: 15px;
+            }
+            
+            .welcome-section {
+                padding: 30px 20px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+        }
+        
+        /* 消息框样式 */
+        .message-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .message-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .message-info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录注册主容器 -->
+        <div class="login-register-container">
+            <!-- 左侧欢迎区域 -->
+            <div class="welcome-section">
+                <h1><i class="fas fa-university"></i> 欢迎使用银行系统</h1>
+                <p>安全、便捷、智能的金融服务体验</p>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>银行级安全保护</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-bolt"></i>
+                        <span>极速交易处理</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>随时随地管理</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>实时账户更新</span>
+                    </div>
+                </div>
+                <div class="welcome-footer">
+                    <p><i class="fas fa-copyright"></i> 2025 银行系统 - 您值得信赖的金融服务伙伴</p>
+                </div>
+            </div>
+            
+            <!-- 右侧表单区域 -->
+            <div class="form-section">
+                <!-- 切换标签 -->
+                <div class="tab-container">
+                    <button class="tab-btn active" data-tab="login">登录</button>
+                    <button class="tab-btn" data-tab="register">注册</button>
+                </div>
+                
+                <!-- 登录表单 -->
+                <form id="loginForm" class="form-content active">
+                    <div class="form-group">
+                        <label for="loginNickname">用户名</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="loginNickname" name="nickname" required placeholder="请输入用户名">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginCardNo">卡号</label>
+                        <div class="input-group">
+                            <i class="fas fa-credit-card"></i>
+                            <input type="text" id="loginCardNo" name="cardNo" required placeholder="请输入银行卡号">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">密码</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" name="password" required placeholder="请输入密码">
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            记住我
+                        </label>
+                        <a href="#" class="forgot-password">忘记密码？</a>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i> 安全登录
+                    </button>
+                    
+                    <div class="form-footer">
+                        <p>管理员请 <a href="admin-login.html">点击这里</a> 登录</p>
+                    </div>
+                </form>
+                
+                <!-- 注册表单 -->
+                <form id="registerForm" class="form-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regNickname">用户名 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="regNickname" name="nickname" required placeholder="请输入用户名">
+                            </div>
+                            <small class="form-hint">用户名将用于登录</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regName">真实姓名 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-id-card"></i>
+                                <input type="text" id="regName" name="name" required placeholder="请输入真实姓名">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regMobile">手机号码 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" id="regMobile" name="mobile" required placeholder="请输入手机号码">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regIdNum">身份证号 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-address-card"></i>
+                                <input type="text" id="regIdNum" name="idNum" required placeholder="请输入身份证号码">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regCardType">卡类型 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-credit-card"></i>
+                                <select id="regCardType" name="cardType" required>
+                                    <option value="">请选择卡类型</option>
+                                    <option value="1">储蓄卡</option>
+                                    <option value="2">信用卡</option>
+                                    <option value="3">社保卡</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regCardNo">银行卡号 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-credit-card"></i>
+                                <input type="text" id="regCardNo" name="cardNo" required placeholder="请输入银行卡号">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regAddress">居住地址 *</label>
+                        <div class="input-group">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="regAddress" name="address" required placeholder="请输入详细地址">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regPassword">登录密码 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="regPassword" name="password" required placeholder="请输入密码">
+                                <button type="button" class="toggle-password" onclick="togglePassword('regPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="form-hint">密码长度至少6位，建议包含字母和数字</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regConfirmPassword">确认密码 *</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="regConfirmPassword" name="confirmPassword" required placeholder="请再次输入密码">
+                                <button type="button" class="toggle-password" onclick="togglePassword('regConfirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regState">账户状态</label>
+                        <div class="input-group">
+                            <i class="fas fa-toggle-on"></i>
+                            <select id="regState" name="state">
+                                <option value="1">启用</option>
+                                <option value="0">禁用</option>
+                            </select>
+                        </div>
+                        <small class="form-hint">新注册账户默认为启用状态</small>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            我已阅读并同意<a href="#" class="terms-link">用户协议</a>和<a href="#" class="terms-link">隐私政策</a>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="register-btn">
+                        <i class="fas fa-user-plus"></i> 创建账户
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>处理中...</p>
+        </div>
+    </div>
+    
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="messageContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化标签切换功能
+            initTabs();
+            
+            // 绑定表单事件
+            bindFormEvents();
+            
+            // 添加输入框焦点效果
+            addInputFocusEffects();
+        });
+        
+        // 显示消息函数
+        function showMessage(message, type) {
+            const modal = document.getElementById('messageModal');
+            const content = document.getElementById('messageContent');
+            
+            // 设置消息内容和样式
+            content.textContent = message;
+            content.className = 'message-' + type;
+            
+            // 显示模态框
+            modal.style.display = 'block';
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 3000);
+            
+            // 点击关闭按钮关闭模态框
+            document.querySelector('.close').onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+        
+        // 显示/隐藏加载动画
+        function showLoading(show) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+        
+        // 添加输入框焦点效果
+        function addInputFocusEffects() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+        }
+        
+        // 初始化标签切换功能
+        function initTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const formContents = document.querySelectorAll('.form-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    
+                    // 更新激活的标签按钮
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应的表单
+                    formContents.forEach(form => {
+                        form.classList.remove('active');
+                        if (form.id === (tab === 'login' ? 'loginForm' : 'registerForm')) {
+                            form.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // 绑定表单事件
+        function bindFormEvents() {
+            // 登录表单提交
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // 注册表单提交
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            
+            // 忘记密码链接
+            document.querySelector('.forgot-password').addEventListener('click', function(e) {
+                e.preventDefault();
+                showMessage('请联系银行客服重置密码', 'info');
+            });
+            
+            // 用户协议链接
+            document.querySelectorAll('.terms-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showMessage('用户协议和隐私政策页面正在开发中', 'info');
+                });
+            });
+            
+            // 添加表单输入事件监听
+            addFormInputListeners();
+        }
+        
+        // 添加表单输入事件监听
+        function addFormInputListeners() {
+            // 登录表单输入监听
+            const loginInputs = ['loginNickname', 'loginCardNo', 'loginPassword'];
+            loginInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    this.classList.remove('invalid');
+                });
+            });
+            
+            // 注册表单输入监听
+            const registerInputs = [
+                'regNickname', 'regName', 'regMobile', 'regIdNum', 
+                'regCardType', 'regCardNo', 'regAddress', 'regPassword', 
+                'regConfirmPassword'
+            ];
+            registerInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    this.classList.remove('invalid');
+                });
+            });
+        }
+        
+        // 处理登录
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const nickname = document.getElementById('loginNickname').value;
+            const cardNo = document.getElementById('loginCardNo').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // 基本验证
+            if (!nickname || !cardNo || !password) {
+                showMessage('请填写所有必填字段', 'error');
+                // 标记无效字段
+                if (!nickname) document.getElementById('loginNickname').classList.add('invalid');
+                if (!cardNo) document.getElementById('loginCardNo').classList.add('invalid');
+                if (!password) document.getElementById('loginPassword').classList.add('invalid');
+                return;
+            }
+            
+            // 卡号格式验证
+            if (!/^\d+$/.test(cardNo)) {
+                showMessage('卡号格式不正确', 'error');
+                document.getElementById('loginCardNo').classList.add('invalid');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch('./user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nickname: nickname,
+                        cardNo: cardNo,
+                        password: password
+                    })
+                });
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('登录成功！正在跳转...', 'success');
+                    // 延迟跳转到用户主页
+                    setTimeout(() => {
+                        window.location.href = './user-home.jsp';
+                    }, 1500);
+                } else {
+                    showMessage(result.message || '登录失败，请检查用户名、卡号和密码', 'error');
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 处理注册
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const formData = {
+                nickname: document.getElementById('regNickname').value,
+                name: document.getElementById('regName').value,
+                mobile: document.getElementById('regMobile').value,
+                idNum: document.getElementById('regIdNum').value,
+                cardType: document.getElementById('regCardType').value,
+                cardNo: document.getElementById('regCardNo').value,
+                address: document.getElementById('regAddress').value,
+                password: document.getElementById('regPassword').value,
+                confirmPassword: document.getElementById('regConfirmPassword').value,
+                state: document.getElementById('regState').value
+            };
+            
+            // 表单验证
+            if (!validateRegisterForm(formData)) {
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch('./user/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nickname: formData.nickname,
+                        name: formData.name,
+                        mobile: formData.mobile,
+                        idNum: formData.idNum,
+                        cardType: parseInt(formData.cardType),
+                        cardNo: formData.cardNo,
+                        address: formData.address,
+                        password: formData.password,
+                        state: parseInt(formData.state)
+                    })
+                });
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    showMessage('注册成功！正在跳转到登录页面...', 'success');
+                    setTimeout(() => {
+                        // 切换到登录标签
+                        document.querySelector('.tab-btn[data-tab="login"]').click();
+                    }, 2000);
+                } else {
+                    showMessage(result.msg || result.message || '注册失败，请稍后重试', 'error');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 表单验证函数
+        function validateRegisterForm(data) {
+            // 必填字段验证
+            const requiredFields = ['nickname', 'name', 'mobile', 'idNum', 'cardType', 'cardNo', 'address', 'password'];
+            for (let field of requiredFields) {
+                if (!data[field] || data[field].trim() === '') {
+                    showMessage(`请填写所有必填字段`, 'error');
+                    return false;
+                }
+            }
+            
+            // 用户名验证
+            if (data.nickname.length < 3 || data.nickname.length > 20) {
+                showMessage('用户名长度应在3-20个字符之间', 'error');
+                return false;
+            }
+            
+            // 手机号验证
+            if (!/^1[3-9]\d{9}$/.test(data.mobile)) {
+                showMessage('请输入正确的手机号码', 'error');
+                return false;
+            }
+            
+            // 身份证号验证
+            if (!/^\d{17}[\dXx]$/.test(data.idNum)) {
+                showMessage('请输入正确的身份证号码', 'error');
+                return false;
+            }
+            
+            // 银行卡号验证
+            if (!/^\d{16,19}$/.test(data.cardNo)) {
+                showMessage('银行卡号格式不正确', 'error');
+                return false;
+            }
+            
+            // 密码验证
+            if (data.password.length < 6) {
+                showMessage('密码长度至少6位', 'error');
+                return false;
+            }
+            
+            // 确认密码验证
+            if (data.password !== data.confirmPassword) {
+                showMessage('两次输入的密码不一致', 'error');
+                return false;
+            }
+            
+            // 用户协议验证
+            if (!document.getElementById('agreeTerms').checked) {
+                showMessage('请阅读并同意用户协议和隐私政策', 'error');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 添加实时输入验证
+        function addRealTimeValidation() {
+            // 用户名实时验证
+            document.getElementById('regNickname').addEventListener('input', function() {
+                const nickname = this.value;
+                if (nickname.length > 0 && (nickname.length < 3 || nickname.length > 20)) {
+                    this.setCustomValidity('用户名长度应在3-20个字符之间');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // 手机号实时验证
+            document.getElementById('regMobile').addEventListener('input', function() {
+                const mobile = this.value;
+                if (mobile.length > 0 && !/^1[3-9]\d{9}$/.test(mobile)) {
+                    this.setCustomValidity('请输入正确的手机号码');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // 身份证号实时验证
+            document.getElementById('regIdNum').addEventListener('input', function() {
+                const idNum = this.value;
+                if (idNum.length > 0 && !/^\d{17}[\dXx]$/.test(idNum)) {
+                    this.setCustomValidity('请输入正确的身份证号码');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // 银行卡号实时验证
+            document.getElementById('regCardNo').addEventListener('input', function() {
+                const cardNo = this.value;
+                if (cardNo.length > 0 && !/^\d{16,19}$/.test(cardNo)) {
+                    this.setCustomValidity('银行卡号格式不正确');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // 密码实时验证
+            document.getElementById('regPassword').addEventListener('input', function() {
+                const password = this.value;
+                if (password.length > 0 && password.length < 6) {
+                    this.setCustomValidity('密码长度至少6位');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // 确认密码实时验证
+            document.getElementById('regConfirmPassword').addEventListener('input', function() {
+                const password = document.getElementById('regPassword').value;
+                const confirmPassword = this.value;
+                if (confirmPassword.length > 0 && password !== confirmPassword) {
+                    this.setCustomValidity('两次输入的密码不一致');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+        
+        // 在页面加载时添加实时验证
+        document.addEventListener('DOMContentLoaded', function() {
+            addRealTimeValidation();
+        });
+        
+        // 密码显示/隐藏切换
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleBtn = passwordInput.nextElementSibling.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.classList.remove('fa-eye');
+                toggleBtn.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.classList.remove('fa-eye-slash');
+                toggleBtn.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>
