@@ -1,0 +1,753 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: Admin
+  Date: 2025/11/18
+  Time: 下午2:00
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    // 检查管理员是否已经登录
+    Object adminInfo = session.getAttribute("adminInfo");
+    if (adminInfo == null) {
+        // 管理员未登录，重定向到登录页面
+        response.sendRedirect(request.getContextPath() + "/admin-login.html");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行系统 - 管理员后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .menu-item.active {
+            background: #e74c3c;
+            border-left: 4px solid #fff;
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status.active {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+
+        .status.inactive {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* 仪表盘样式 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.users {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .stat-icon.transactions {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+
+        .stat-icon.revenue {
+            background: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .stat-icon.alerts {
+            background: rgba(241, 196, 15, 0.1);
+            color: #f1c40f;
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-university"></i> 银行管理系统
+        </div>
+        <div class="user-info">
+            <span id="adminName">管理员</span>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> 退出登录
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-user-shield"></i> 管理面板</h2>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-target="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>仪表盘</span>
+                </div>
+                <div class="menu-item" data-target="users">
+                    <i class="fas fa-users"></i>
+                    <span>用户管理</span>
+                </div>
+                <div class="menu-item" data-target="admins">
+                    <i class="fas fa-user-shield"></i>
+                    <span>管理员管理</span>
+                </div>
+                <div class="menu-item" data-target="transactions">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>交易记录</span>
+                </div>
+                <div class="menu-item" data-target="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>系统设置</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 仪表盘 -->
+            <div id="dashboard" class="content-section">
+                <div class="page-header">
+                    <h1>仪表盘</h1>
+                    <p>系统概览和统计数据</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon users">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="userCount">1,248</h3>
+                            <p>注册用户</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon transactions">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="transactionCount">5,542</h3>
+                            <p>交易记录</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="revenue">¥2.4M</h3>
+                            <p>总交易额</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon alerts">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="alertCount">12</h3>
+                            <p>待处理警报</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">最近活动</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                    <th>用户</th>
+                                    <th>IP地址</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-11-18 14:30</td>
+                                    <td>用户登录</td>
+                                    <td>张三</td>
+                                    <td>192.168.1.101</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-11-18 14:25</td>
+                                    <td>转账操作</td>
+                                    <td>李四</td>
+                                    <td>192.168.1.102</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-11-18 14:15</td>
+                                    <td>管理员登录</td>
+                                    <td>系统管理员</td>
+                                    <td>192.168.1.100</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-11-18 13:45</td>
+                                    <td>用户注册</td>
+                                    <td>王五</td>
+                                    <td>192.168.1.103</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div id="users" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1>用户管理</h1>
+                    <p>管理系统中的所有用户</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">用户列表</div>
+                        <button class="btn btn-primary" id="addUserBtn">
+                            <i class="fas fa-plus"></i> 添加用户
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>姓名</th>
+                                    <th>手机号</th>
+                                    <th>卡号</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>zhangsan</td>
+                                    <td>张三</td>
+                                    <td>13800138000</td>
+                                    <td>6222****1234</td>
+                                    <td><span class="status active">启用</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>lisi</td>
+                                    <td>李四</td>
+                                    <td>13800138001</td>
+                                    <td>6222****5678</td>
+                                    <td><span class="status active">启用</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理员管理 -->
+            <div id="admins" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1>管理员管理</h1>
+                    <p>管理系统中的所有管理员</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">管理员列表</div>
+                        <button class="btn btn-primary" id="addAdminBtn">
+                            <i class="fas fa-plus"></i> 添加管理员
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>姓名</th>
+                                    <th>手机号</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>admin</td>
+                                    <td>系统管理员</td>
+                                    <td>13800138000</td>
+                                    <td><span class="status active">启用</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>manager</td>
+                                    <td>业务经理</td>
+                                    <td>13800138004</td>
+                                    <td><span class="status active">启用</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交易记录 -->
+            <div id="transactions" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1>交易记录</h1>
+                    <p>查看所有交易历史</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">交易列表</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>交易类型</th>
+                                    <th>账户</th>
+                                    <th>金额</th>
+                                    <th>余额</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-11-18 14:30</td>
+                                    <td>存款</td>
+                                    <td>张三 (6222****1234)</td>
+                                    <td>+¥5,000.00</td>
+                                    <td>¥12,500.00</td>
+                                    <td><span class="status active">成功</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-11-18 14:25</td>
+                                    <td>转账</td>
+                                    <td>李四 → 王五</td>
+                                    <td>-¥2,000.00</td>
+                                    <td>¥8,300.00</td>
+                                    <td><span class="status active">成功</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置 -->
+            <div id="settings" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1>系统设置</h1>
+                    <p>配置系统参数</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">基本设置</div>
+                    </div>
+                    <form>
+                        <div class="form-group">
+                            <label for="systemName">系统名称</label>
+                            <input type="text" id="systemName" class="form-control" value="银行管理系统">
+                        </div>
+                        <div class="form-group">
+                            <label for="systemVersion">系统版本</label>
+                            <input type="text" id="systemVersion" class="form-control" value="v1.0.0" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxLoginAttempts">最大登录尝试次数</label>
+                            <input type="number" id="maxLoginAttempts" class="form-control" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionTimeout">会话超时时间(分钟)</label>
+                            <input type="number" id="sessionTimeout" class="form-control" value="30">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存设置
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化管理员信息
+            initializeAdminInfo();
+            
+            // 绑定菜单项点击事件
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const target = this.getAttribute('data-target');
+                    showSection(target);
+                    
+                    // 更新激活状态
+                    document.querySelectorAll('.menu-item').forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // 绑定登出按钮事件
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+        });
+
+        // 初始化管理员信息
+        function initializeAdminInfo() {
+            // 在实际应用中，这里应该从服务器获取管理员信息
+            // 这里为了演示，我们使用默认值
+            document.getElementById('adminName').textContent = '系统管理员';
+        }
+
+        // 显示指定部分
+        function showSection(sectionId) {
+            // 隐藏所有部分
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // 显示指定部分
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // 处理登出
+        async function handleLogout() {
+            if (confirm('确定要退出登录吗？')) {
+                try {
+                    const response = await fetch('/admin/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // 登出成功，跳转到登录页面
+                        window.location.href = '<%= request.getContextPath() %>/admin-login.html';
+                    } else {
+                        alert(result.message || '登出失败');
+                    }
+                } catch (error) {
+                    console.error('登出错误:', error);
+                    alert('网络错误，请稍后重试');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

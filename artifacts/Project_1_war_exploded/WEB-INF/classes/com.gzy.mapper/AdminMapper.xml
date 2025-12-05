@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gzy.mapper.AdminMapper">
+
+    <select id="queryByMobile" parameterType="string" resultType="com.gzy.entiy.AdminInfo">
+        SELECT
+        id,
+        password,
+        nickname,
+        name,
+        mobile,
+        state,
+        is_deleted AS isDelete,
+        create_by AS createBy,
+        update_by AS updateBy,
+        create_time AS createTime,
+        update_time AS updateTime
+        FROM admin_info
+        WHERE mobile = #{mobile}
+    </select>
+
+    <select id="queryByAll" resultType="com.gzy.entiy.AdminInfo">
+        SELECT
+        id,
+        password,
+        nickname,
+        name,
+        mobile,
+        state,
+        is_deleted AS isDelete,
+        create_by AS createBy,
+        update_by AS updateBy,
+        create_time AS createTime,
+        update_time AS updateTime
+        FROM admin_info
+        WHERE is_deleted = 0
+    </select>
+
+    <select id="queryByConditions" parameterType="map" resultType="com.gzy.entiy.AdminInfo">
+        SELECT
+        id,
+        password,
+        nickname,
+        name,
+        mobile,
+        state,
+        is_deleted AS isDelete,
+        create_by AS createBy,
+        update_by AS updateBy,
+        create_time AS createTime,
+        update_time AS updateTime
+        FROM admin_info
+        WHERE is_deleted = 0
+        <if test="nickname != null and nickname != ''">
+            AND nickname LIKE CONCAT('%', #{nickname}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="mobile != null and mobile != ''">
+            AND mobile = #{mobile}
+        </if>
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM admin_info
+        WHERE id = #{id}
+    </delete>
+
+    <select id="queryById" parameterType="long" resultType="com.gzy.entiy.AdminInfo">
+        SELECT
+        id,
+        password,
+        nickname,
+        name,
+        mobile,
+        state,
+        is_deleted AS isDelete,
+        create_by AS createBy,
+        update_by AS updateBy,
+        create_time AS createTime,
+        update_time AS updateTime
+        FROM admin_info
+        WHERE id = #{id}
+    </select>
+
+    <update id="updateById" parameterType="com.gzy.entiy.AdminInfo">
+        UPDATE admin_info
+        SET
+        nickname = #{nickname},
+        name = #{name},
+        mobile = #{mobile},
+        state = #{state}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="addAdmin" parameterType="com.gzy.entiy.AdminInfo">
+        INSERT INTO admin_info(nickname, name, mobile, state)
+        VALUES (#{nickname}, #{name}, #{mobile}, #{state})
+    </insert>
+</mapper>
